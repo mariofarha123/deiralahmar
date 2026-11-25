@@ -207,15 +207,16 @@ input {
   background: url("../background-mobile-poster.jpg") center / cover no-repeat;
 }
 
-.toolbar-shade {
-  position: fixed;
+.media::after {
+  position: absolute;
   right: 0;
   bottom: 0;
   left: 0;
-  z-index: 15;
-  height: calc(3rem + env(safe-area-inset-bottom));
+  z-index: 2;
+  height: calc(6rem + env(safe-area-inset-bottom));
   background: linear-gradient(180deg, transparent, rgb(0 0 0 / 85%) 60%, #000);
   pointer-events: none;
+  content: "";
 }
 
 .bg-video {
@@ -351,11 +352,8 @@ input {
 .register {
   position: relative;
   display: grid;
-  min-height: 100vh;
-  min-height: 100lvh;
   place-items: center;
-  padding: clamp(3rem, 8vh, 5rem) 1.25rem calc(clamp(3rem, 8vh, 5rem) + env(safe-area-inset-bottom));
-  padding-bottom: calc(clamp(3rem, 8vh, 5rem) + max(100lvh - 100svh, env(safe-area-inset-bottom) + 3rem));
+  padding: clamp(3rem, 8vh, 5rem) 1.25rem calc(1.5rem + env(safe-area-inset-bottom) + 3.5rem);
   background: linear-gradient(180deg, rgb(0 0 0 / 60%), rgb(0 0 0 / 75%) 25%, rgb(0 0 0 / 78%));
 }
 
@@ -753,9 +751,6 @@ input:focus,
     background-image: url("../background-poster.jpg");
   }
 
-  .toolbar-shade {
-    display: none;
-  }
 
   .media {
     background-position: calc(var(--split) / 2 - 100svh * 8 / 9) center;
@@ -769,6 +764,7 @@ input:focus,
     position: absolute;
     inset: 0;
     z-index: 2;
+    height: auto;
     background:
       linear-gradient(
         90deg,
