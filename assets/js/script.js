@@ -112,9 +112,10 @@ function initSeamlessVideo(videoList) {
   const fadeSeconds = 0.6;
   let active = 0;
   let swapping = false;
+  let onScreen = true;
 
   async function swap() {
-    if (swapping) return;
+    if (swapping || !onScreen) return;
     swapping = true;
 
     const current = videos[active];
@@ -145,6 +146,12 @@ function initSeamlessVideo(videoList) {
     if (duration && duration - currentTime <= fadeSeconds) swap();
     requestAnimationFrame(tick);
   }
+
+  new IntersectionObserver(([entry]) => {
+    onScreen = entry.isIntersecting;
+    if (onScreen) videos[active].play().catch(() => {});
+    else videos.forEach((video) => video.pause());
+  }).observe(videos[0].parentElement);
 
   videos.forEach((video) => video.addEventListener("ended", swap));
   videos[0].play().catch(() => {});

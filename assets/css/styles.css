@@ -196,13 +196,13 @@ input {
 }
 
 .media {
-  position: fixed;
+  position: absolute;
   inset: 0 0 auto;
   z-index: -1;
   height: 100vh;
   height: 100lvh;
   overflow: hidden;
-  background: url("../background-poster.jpg") center 38% / cover no-repeat;
+  background: url("../background-mobile-poster.jpg") center / cover no-repeat;
 }
 
 .bg-video {
@@ -234,8 +234,9 @@ input {
   padding:
     calc(clamp(1.5rem, 5vh, 3rem) + env(safe-area-inset-top))
     1.25rem
-    calc(clamp(1.5rem, 5vh, 3rem) + env(safe-area-inset-bottom) + 4.5rem);
-  background: linear-gradient(180deg, rgb(0 0 0 / 50%), rgb(0 0 0 / 25%) 30%, rgb(0 0 0 / 25%) 70%, rgb(0 0 0 / 60%));
+    calc(clamp(1.5rem, 5vh, 3rem) + env(safe-area-inset-bottom));
+  padding-bottom: calc(clamp(1.5rem, 5vh, 3rem) + max(100lvh - 100svh, env(safe-area-inset-bottom)));
+  background: linear-gradient(180deg, rgb(0 0 0 / 50%), rgb(0 0 0 / 25%) 30%, rgb(0 0 0 / 25%) 62%, rgb(0 0 0 / 55%) 80%, rgb(0 0 0 / 85%) 92%, #000);
 }
 
 .logo {
@@ -340,8 +341,12 @@ input {
   min-height: 100vh;
   min-height: 100lvh;
   place-items: center;
-  padding: clamp(3rem, 8vh, 5rem) 1.25rem calc(clamp(3rem, 8vh, 5rem) + env(safe-area-inset-bottom) + 3rem);
-  background: linear-gradient(180deg, rgb(0 0 0 / 60%), rgb(0 0 0 / 75%) 25%, rgb(0 0 0 / 78%));
+  padding: clamp(3rem, 8vh, 5rem) 1.25rem calc(clamp(3rem, 8vh, 5rem) + env(safe-area-inset-bottom));
+  padding-bottom: calc(clamp(3rem, 8vh, 5rem) + max(100lvh - 100svh, env(safe-area-inset-bottom)));
+  background:
+    linear-gradient(180deg, #000, rgb(0 0 0 / 80%) 22%, rgb(0 0 0 / 78%)),
+    url("../background-mobile-poster.jpg") center / cover no-repeat,
+    #000;
 }
 
 .snowfall {
@@ -730,8 +735,11 @@ input:focus,
   }
 
   .media {
+    position: fixed;
     right: auto;
     width: 66vw;
+    height: 100vh;
+    background-image: url("../background-poster.jpg");
   }
 
   .media {

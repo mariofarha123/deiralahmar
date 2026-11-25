@@ -10,14 +10,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
-  <link rel="preload" href="assets/background.mp4" as="video" type="video/mp4">
+  <link rel="preload" href="assets/background-mobile.mp4" as="video" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
+  <link rel="preload" href="assets/background.mp4" as="video" type="video/mp4" media="(min-width: 64rem) and (min-aspect-ratio: 5/4)">
   <link rel="stylesheet" href="assets/css/styles.css">
   <script src="assets/js/script.js" defer></script>
 </head>
 <body>
   <div class="media" aria-hidden="true">
-    <video class="bg-video is-active is-front" src="assets/background.mp4" poster="assets/background-poster.jpg" muted playsinline autoplay preload="auto"></video>
-    <video class="bg-video" src="assets/background.mp4" muted playsinline preload="auto"></video>
+    <video class="bg-video is-active is-front" muted playsinline autoplay preload="auto">
+      <source src="assets/background-mobile.mp4" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
+      <source src="assets/background.mp4" type="video/mp4">
+    </video>
+    <video class="bg-video" muted playsinline preload="auto">
+      <source src="assets/background-mobile.mp4" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
+      <source src="assets/background.mp4" type="video/mp4">
+    </video>
   </div>
 
   <audio id="bg-music" src="assets/audio/christmas.mp3" loop preload="auto"></audio>
