@@ -23,6 +23,7 @@
 
 html {
   scroll-behavior: smooth;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -196,8 +197,10 @@ input {
 
 .media {
   position: fixed;
-  inset: 0;
+  inset: 0 0 auto;
   z-index: -1;
+  height: 100vh;
+  height: 100lvh;
   overflow: hidden;
   background: url("../background-poster.jpg") center 38% / cover no-repeat;
 }
@@ -331,9 +334,10 @@ input {
 .register {
   position: relative;
   display: grid;
-  min-height: 100svh;
+  min-height: 100vh;
+  min-height: 100lvh;
   place-items: center;
-  padding: clamp(3rem, 8vh, 5rem) 1.25rem;
+  padding: clamp(3rem, 8vh, 5rem) 1.25rem calc(clamp(3rem, 8vh, 5rem) + env(safe-area-inset-bottom));
   background: linear-gradient(180deg, rgb(0 0 0 / 60%), rgb(0 0 0 / 75%) 25%, rgb(0 0 0 / 78%));
 }
 
