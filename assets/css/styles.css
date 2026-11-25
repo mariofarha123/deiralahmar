@@ -4,7 +4,6 @@
   --line: rgb(255 255 255 / 24%);
   --line-hover: rgb(255 255 255 / 36%);
   --line-focus: rgb(255 255 255 / 50%);
-  --line-strong: rgb(255 255 255 / 55%);
   --field-bg: rgb(8 18 12 / 35%);
   --field-bg-focus: rgb(8 18 12 / 55%);
   --error: #ffb4a8;
@@ -43,156 +42,6 @@ input {
 
 [hidden] {
   display: none !important;
-}
-
-.hero-actions {
-  display: flex;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.music {
-  position: relative;
-}
-
-.music-credit {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 0.6rem);
-  z-index: 20;
-  width: max-content;
-  max-width: min(16rem, 80vw);
-  margin: 0;
-  padding: 0.55rem 0.8rem;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: rgb(0 0 0 / 65%);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  color: rgb(255 255 255 / 80%);
-  font-size: 0.68rem;
-  line-height: 1.45;
-  opacity: 0;
-  pointer-events: none;
-  translate: 0 4px;
-  transition: opacity 0.3s, translate 0.3s;
-}
-
-.music-credit-title {
-  display: block;
-  color: #fff;
-  font-weight: 600;
-}
-
-.music-credit a {
-  color: inherit;
-  white-space: nowrap;
-}
-
-.music:has(:focus-visible) .music-credit {
-  opacity: 1;
-  pointer-events: auto;
-  translate: 0 0;
-}
-
-@media (hover: hover) {
-  .music:hover .music-credit {
-    opacity: 1;
-    pointer-events: auto;
-    translate: 0 0;
-  }
-}
-
-.music-toggle {
-  display: inline-flex;
-  height: 2.9rem;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  background: none;
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
-}
-
-.music-toggle:hover .music-disc {
-  scale: 1.06;
-}
-
-.music-toggle:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 4px;
-}
-
-.music-disc {
-  position: relative;
-  display: grid;
-  width: 2.75rem;
-  height: 2.75rem;
-  flex-shrink: 0;
-  place-items: center;
-  border-radius: 50%;
-  background: #fff;
-  color: var(--red);
-  transition: scale 0.2s;
-}
-
-.music-label {
-  display: none;
-  white-space: nowrap;
-}
-
-.music-icon {
-  grid-area: 1 / 1;
-  width: 1.1rem;
-  height: 1.1rem;
-  fill: currentColor;
-  transition: opacity 0.25s, scale 0.25s;
-}
-
-.music-icon-pause,
-.music-toggle.is-playing .music-icon-play {
-  opacity: 0;
-  scale: 0.6;
-}
-
-.music-toggle.is-playing .music-icon-pause {
-  opacity: 1;
-  scale: 1;
-}
-
-.music-disc::after {
-  position: absolute;
-  inset: 0;
-  border: 1.5px solid rgb(255 255 255 / 70%);
-  border-radius: 50%;
-  opacity: 0;
-  pointer-events: none;
-  content: "";
-}
-
-.music-toggle.is-playing .music-disc::after {
-  animation: music-pulse 2.2s ease-out infinite;
-}
-
-@keyframes music-pulse {
-  0% {
-    opacity: 0.7;
-    scale: 1;
-  }
-
-  100% {
-    opacity: 0;
-    scale: 1.55;
-  }
 }
 
 .media {
@@ -282,11 +131,12 @@ input {
 }
 
 .cta::before {
+  --stripe-repeat: 22.627px;
   position: absolute;
   inset: 0;
   padding: 3px;
   border-radius: inherit;
-  background: repeating-linear-gradient(-45deg, var(--red) 0 8px, #fff 8px 16px) 0 0 / 22.627px 22.627px;
+  background: repeating-linear-gradient(-45deg, var(--red) 0 8px, #fff 8px 16px) 0 0 / var(--stripe-repeat) var(--stripe-repeat);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
@@ -322,10 +172,10 @@ input {
 
 .santa-hat {
   position: absolute;
-  top: -27px;
-  left: -16px;
+  top: -31px;
+  left: -14px;
   width: 54px;
-  rotate: -20deg;
+  rotate: -29deg;
   pointer-events: none;
 }
 
@@ -340,7 +190,7 @@ input {
 }
 
 @keyframes candy-stripes {
-  to { background-position: 22.627px 0; }
+  to { background-position: var(--stripe-repeat) 0; }
 }
 
 @keyframes nudge {
@@ -423,11 +273,59 @@ input {
 }
 
 .candy-stripe {
+  --stripe-repeat: 16.971px;
   width: 72px;
   height: 5px;
   margin-top: 0.35rem;
   border-radius: 999px;
-  background: repeating-linear-gradient(-45deg, var(--red) 0 6px, #fff 6px 12px);
+  background: repeating-linear-gradient(-45deg, var(--red) 0 6px, #fff 6px 12px) 0 0 / var(--stripe-repeat) var(--stripe-repeat);
+  animation: candy-stripes 1.4s linear infinite;
+}
+
+.snowflake {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  margin-top: 0.35rem;
+}
+
+.snowflake > span {
+  position: absolute;
+  inset: 0;
+  background: var(--gold);
+  clip-path: polygon(
+    47% 0, 53% 0, 53% 28%, 67% 14%, 71% 18%, 53% 36%,
+    53% 64%, 71% 82%, 67% 86%, 53% 72%, 53% 100%, 47% 100%,
+    47% 72%, 33% 86%, 29% 82%, 47% 64%, 47% 36%, 29% 18%, 33% 14%, 47% 28%
+  );
+}
+
+.snowflake > :nth-child(2) {
+  transform: rotate(60deg);
+}
+
+.snowflake > :nth-child(3) {
+  transform: rotate(-60deg);
+}
+
+.snowflake::before,
+.snowflake::after {
+  position: absolute;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  background: var(--gold);
+  opacity: 0.6;
+  transform: translateY(-50%) rotate(45deg);
+  content: "";
+}
+
+.snowflake::before {
+  left: -12px;
+}
+
+.snowflake::after {
+  right: -12px;
 }
 
 form {
@@ -451,6 +349,10 @@ form {
   font-size: 0.85rem;
   font-weight: 600;
   letter-spacing: 0.02em;
+}
+
+.required {
+  color: var(--error);
 }
 
 .optional {
@@ -658,16 +560,6 @@ input:focus,
   outline-offset: 3px;
 }
 
-.button-ghost {
-  border-color: var(--line-strong);
-  background: rgb(255 255 255 / 10%);
-  color: var(--ink);
-}
-
-.button-ghost:hover {
-  background: rgb(255 255 255 / 16%);
-}
-
 .confirmation {
   display: flex;
   min-height: 22rem;
@@ -678,10 +570,21 @@ input:focus,
   text-align: center;
 }
 
+.confirmation .eyebrow {
+  font-family: Georgia, serif;
+  font-size: 1rem;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
 .confirmation h2 {
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 1.65rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
   outline: none;
 }
 
@@ -690,22 +593,13 @@ input:focus,
   color: var(--muted);
 }
 
-.confirmation .candy-stripe {
+.confirmation .snowflake {
   margin: 0.4rem 0 0.6rem;
 }
 
-.ornament {
-  width: 4.25rem;
-  height: auto;
+.confirmation .logo {
+  width: 8.75rem;
   margin-bottom: 0.5rem;
-  transform-origin: 50% 8%;
-  animation: swing 3s ease-in-out infinite;
-}
-
-@keyframes swing {
-  0%,
-  100% { transform: rotate(-6deg); }
-  50% { transform: rotate(6deg); }
 }
 
 @media (max-width: 25rem) {
@@ -785,30 +679,13 @@ input:focus,
     content: "";
   }
 
-  .hero,
-  .hero-actions {
+  .hero {
     display: contents;
   }
 
   .hero > .logo,
   .scroll-cue {
     display: none;
-  }
-
-  .music {
-    position: fixed;
-    bottom: 1.5rem;
-    left: 1.5rem;
-    z-index: 20;
-  }
-
-  .music-credit {
-    right: auto;
-    left: 0;
-  }
-
-  .music-label {
-    display: inline;
   }
 
   .register {
@@ -835,8 +712,16 @@ input:focus,
     margin-top: auto;
   }
 
+  .register:has(.confirmation:not([hidden])) > .register-logo {
+    display: none;
+  }
+
   .card {
     margin-bottom: auto;
+  }
+
+  .card:has(.confirmation:not([hidden])) {
+    margin-top: auto;
   }
 }
 
@@ -881,8 +766,7 @@ input:focus,
 
   .cta::before,
   .cta-arrow svg,
-  .music-toggle.is-playing .music-disc::after,
-  .ornament {
+  .candy-stripe {
     animation: none;
   }
 }

@@ -1,102 +1,41 @@
 const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzaNMSIdWxIAJbLx9TyrOvk03Vu9EiW_bUrZxfMF6rP1PhL3ElRG3eXrhDfTajoBmBW/exec";
 
 const OTHER_TOWN = "other";
+const ONE_REGISTRATION_PER_BROWSER = false;
+const REGISTRATION_KEY = "deiralahmar-christmas-registration-complete";
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-initBackgroundMusic(document.getElementById("bg-music"), document.getElementById("music-toggle"));
+initRegistrationForm(document.getElementById("registration"));
+initBackgroundMusic(document.getElementById("bg-music"));
 initSeamlessVideo(document.querySelectorAll(".bg-video"));
 initSnowfall(document.querySelector(".snowfall"));
 initScrollCue(document.querySelector(".scroll-cue"));
-initRegistrationForm(document.getElementById("registration"));
 
-function initBackgroundMusic(audio, toggle) {
-  if (!audio || !toggle) return;
+function initBackgroundMusic(audio) {
+  if (!audio) return;
 
-  const mutedKey = "music-muted";
-  const volume = 0.35;
+  audio.volume = 0.35;
   const gestureEvents = ["click", "keydown", "touchend"];
-  let wanted = false;
-  let fadeFrame = 0;
+  const gestureOptions = { capture: true, passive: true };
 
-  const label = toggle.querySelector(".music-label");
-
-  function render(playing) {
-    const text = playing ? "Pause music" : "Play music";
-    toggle.classList.toggle("is-playing", playing);
-    toggle.setAttribute("aria-pressed", String(playing));
-    toggle.setAttribute("aria-label", text);
-    if (label) label.textContent = text;
-  }
-
-  function fadeTo(target, onDone) {
-    cancelAnimationFrame(fadeFrame);
-    const from = audio.volume;
-    const start = performance.now();
-    const step = (now) => {
-      const progress = Math.min((now - start) / 1200, 1);
-      audio.volume = from + (target - from) * progress;
-      if (progress < 1) fadeFrame = requestAnimationFrame(step);
-      else onDone?.();
-    };
-    fadeFrame = requestAnimationFrame(step);
-  }
-
-  async function play() {
-    wanted = true;
-    audio.volume = 0;
-    try {
-      await audio.play();
-    } catch {
-      wanted = false;
-      render(false);
-      return false;
-    }
-    render(true);
-    fadeTo(volume);
-    return true;
-  }
-
-  function pause() {
-    wanted = false;
-    render(false);
-    fadeTo(0, () => audio.pause());
+  function startOnGesture(event) {
+    if (event.isTrusted && audio.paused) audio.play().catch(() => {});
   }
 
   function stopWaitingForGesture() {
-    gestureEvents.forEach((type) => document.removeEventListener(type, startOnGesture));
-  }
-
-  function startOnGesture(event) {
-    if (toggle.contains(event.target)) return;
-    stopWaitingForGesture();
-    play();
-  }
-
-  toggle.addEventListener("click", () => {
-    stopWaitingForGesture();
-    if (wanted) {
-      localStorage.setItem(mutedKey, "1");
-      pause();
-    } else {
-      localStorage.removeItem(mutedKey);
-      play();
+    for (const type of gestureEvents) {
+      document.removeEventListener(type, startOnGesture, gestureOptions);
     }
-  });
+  }
 
-  audio.addEventListener("error", () => {
-    stopWaitingForGesture();
-    toggle.hidden = true;
-  });
+  audio.play().catch((error) => {
+    if (error.name !== "NotAllowedError") return;
 
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) audio.pause();
-    else if (wanted) audio.play().catch(() => {});
-  });
-
-  if (localStorage.getItem(mutedKey)) return;
-
-  play().then((started) => {
-    if (!started && !toggle.hidden) gestureEvents.forEach((type) => document.addEventListener(type, startOnGesture));
+    audio.addEventListener("playing", stopWaitingForGesture, { once: true });
+    audio.addEventListener("error", stopWaitingForGesture, { once: true });
+    for (const type of gestureEvents) {
+      document.addEventListener(type, startOnGesture, gestureOptions);
+    }
   });
 }
 
@@ -228,6 +167,7 @@ function initScrollCue(link) {
 
 function initRegistrationForm(form) {
   const confirmation = document.getElementById("confirmation");
+  const scrollCueLabel = document.querySelector(".scroll-cue .cta-label");
   const message = document.getElementById("form-message");
   const submitButton = form.querySelector('[type="submit"]');
   const otherTownField = document.getElementById("other-town-field");
@@ -275,10 +215,36 @@ function initRegistrationForm(form) {
     };
   }
 
-  function resetForm() {
+  function readRegistrationStatus() {
+    try {
+      return localStorage.getItem(REGISTRATION_KEY) === "1";
+    } catch {
+      return null;
+    }
+  }
+
+  function showConfirmation() {
+    if (!confirmation.hidden) return;
+
     form.reset();
     townSelect.setValue("");
     toggleOtherTown("");
+    form.hidden = true;
+    confirmation.hidden = false;
+    scrollCueLabel.textContent = "View Confirmation";
+  }
+
+  async function saveOnce(registration) {
+    if (readRegistrationStatus() || await registrationRecord()) return;
+
+    await saveRegistration(registration);
+    await registrationRecord(true);
+
+    try {
+      localStorage.setItem(REGISTRATION_KEY, "1");
+    } catch {
+      // Registration succeeded even if browser storage is unavailable.
+    }
   }
 
   form.addEventListener("input", (event) => {
@@ -287,7 +253,7 @@ function initRegistrationForm(form) {
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (submitButton.disabled) return;
+    if (!confirmation.hidden || submitButton.disabled) return;
 
     const data = readForm();
     const errors = validate(data);
@@ -304,16 +270,22 @@ function initRegistrationForm(form) {
     setSubmitting(true);
 
     try {
-      await saveRegistration({
+      const registration = {
         name: data.name,
         phone: data.phone,
         age: data.age,
         town: data.town === OTHER_TOWN ? data.otherTown : data.town,
         email: data.email,
-      });
-      resetForm();
-      form.hidden = true;
-      confirmation.hidden = false;
+      };
+
+      if (!ONE_REGISTRATION_PER_BROWSER) {
+        await saveRegistration(registration);
+      } else if (navigator.locks && readRegistrationStatus() !== null) {
+        await navigator.locks.request(REGISTRATION_KEY, () => saveOnce(registration));
+      } else {
+        await saveOnce(registration);
+      }
+      showConfirmation();
       confirmation.querySelector("h2").focus();
     } catch (error) {
       console.error(error);
@@ -323,11 +295,43 @@ function initRegistrationForm(form) {
     }
   });
 
-  document.getElementById("register-another").addEventListener("click", () => {
-    confirmation.hidden = true;
-    form.hidden = false;
-    form.elements.name.focus();
+  if (!ONE_REGISTRATION_PER_BROWSER) return;
+
+  if (readRegistrationStatus()) {
+    showConfirmation();
+  } else {
+    registrationRecord().then((completed) => {
+      if (completed) showConfirmation();
+    });
+  }
+
+  window.addEventListener("storage", (event) => {
+    if (event.key === REGISTRATION_KEY && event.newValue === "1") showConfirmation();
   });
+}
+
+// Commit the completion flag across tabs before releasing the submission lock.
+function registrationRecord(completed = false) {
+  return new Promise((resolve) => {
+    const open = indexedDB.open(REGISTRATION_KEY, 1);
+    open.onupgradeneeded = () => open.result.createObjectStore("registration");
+    open.onerror = () => resolve(false);
+    open.onsuccess = () => {
+      const database = open.result;
+      const transaction = database.transaction("registration", completed ? "readwrite" : "readonly");
+      const store = transaction.objectStore("registration");
+      const request = completed ? store.put(true, "complete") : store.get("complete");
+
+      transaction.oncomplete = () => {
+        database.close();
+        resolve(completed || request.result === true);
+      };
+      transaction.onabort = () => {
+        database.close();
+        resolve(false);
+      };
+    };
+  }).catch(() => false);
 }
 
 function createTownSelect(root, onSelect) {
@@ -437,10 +441,13 @@ function validate({ name, phone, age, town, otherTown, email }) {
   const phoneDigits = phone.replace(/\D/g, "").replace(/^00/, "");
 
   if (!name) errors.name = "Enter your name.";
-  if (!/^\+?[\d ().-]+$/.test(phone) || phoneDigits.length < 6 || phoneDigits.length > 15) {
+  if (!phone) {
+    errors.phone = "Enter your phone number.";
+  } else if (!/^\+?[\d ().-]+$/.test(phone) || phoneDigits.length < 6 || phoneDigits.length > 15) {
     errors.phone = "Enter a valid phone number.";
   }
-  if (!/^\d{1,3}$/.test(age)) errors.age = "Enter your age in whole years.";
+  if (!age) errors.age = "Enter your age.";
+  else if (!/^\d{1,3}$/.test(age)) errors.age = "Enter your age in whole years.";
   if (!town) errors.town = "Choose a town from the list.";
   if (town === OTHER_TOWN && !otherTown) errors.otherTown = "Enter your town name.";
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errors.email = "Enter a valid email address.";
@@ -456,8 +463,7 @@ function toLatinDigits(value) {
 
 async function saveRegistration(registration) {
   if (!GOOGLE_SHEET_URL) {
-    console.warn("GOOGLE_SHEET_URL is not set; registration was not saved.", registration);
-    return;
+    throw new Error("Registration endpoint is not configured.");
   }
 
   const response = await fetch(GOOGLE_SHEET_URL, {

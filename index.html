@@ -16,6 +16,7 @@
   <script src="assets/js/script.js" defer></script>
 </head>
 <body>
+  <!-- Background music: “Jingle Bells (Calm)” by Kevin MacLeod (https://incompetech.com), licensed under CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/). -->
   <audio id="bg-music" src="assets/audio/christmas.mp3" loop preload="auto"></audio>
 
   <main>
@@ -32,45 +33,24 @@
 
     <div class="hero">
       <img class="logo" src="assets/logo.png" width="588" height="453" alt="بالضيعة أحلى" lang="ar">
-      <div class="hero-actions">
-        <a class="scroll-cue" href="#register">
-          <span class="cta">
-            <svg class="santa-hat" viewBox="0 0 64 56" aria-hidden="true">
-              <path d="M8,40 C10,22 24,8 40,8 C50,8 56,14 56,22 C52,18 46,18 44,24 C42,30 46,36 48,40 Z" fill="#d62b2b"/>
-              <path d="M40,8 C50,8 56,14 56,22 C52,18 46,18 44,24 C42,30 46,36 48,40 L40,40 C38,30 38,18 40,8 Z" fill="#a91c1c"/>
-              <rect x="3" y="37" width="50" height="13" rx="6.5" fill="#f5f9ff"/>
-              <path d="M5,46 C18,49 38,49 51,46" fill="none" stroke="#c9d6e6" stroke-width="2" stroke-linecap="round"/>
-              <circle cx="56" cy="23" r="6.5" fill="#f5f9ff"/>
-              <circle cx="54" cy="21" r="2" fill="#fff"/>
-            </svg>
-            <span class="cta-inner">
-              Fill Out the Form
-              <span class="cta-arrow" aria-hidden="true">
-                <svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </span>
+      <a class="scroll-cue" href="#register">
+        <span class="cta">
+          <svg class="santa-hat" viewBox="0 0 64 56" aria-hidden="true">
+            <path d="M8,40 C10,22 24,8 40,8 C50,8 56,14 56,22 C52,18 46,18 44,24 C42,30 46,36 48,40 Z" fill="#d62b2b"/>
+            <path d="M40,8 C50,8 56,14 56,22 C52,18 46,18 44,24 C42,30 46,36 48,40 L40,40 C38,30 38,18 40,8 Z" fill="#a91c1c"/>
+            <rect x="3" y="37" width="50" height="13" rx="6.5" fill="#f5f9ff"/>
+            <path d="M5,46 C18,49 38,49 51,46" fill="none" stroke="#c9d6e6" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="56" cy="23" r="6.5" fill="#f5f9ff"/>
+            <circle cx="54" cy="21" r="2" fill="#fff"/>
+          </svg>
+          <span class="cta-inner">
+            <span class="cta-label">Fill Out the Form</span>
+            <span class="cta-arrow" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M12 5v14M6 13l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
           </span>
-        </a>
-        <div class="music">
-          <button class="music-toggle" id="music-toggle" type="button" aria-pressed="false" aria-label="Play music" aria-describedby="music-credit">
-            <span class="music-disc" aria-hidden="true">
-              <svg class="music-icon music-icon-play" viewBox="0 0 24 24">
-                <path d="M6.9 5.6v12.8a1 1 0 0 0 1.53.85l10.2-6.4a1 1 0 0 0 0-1.7l-10.2-6.4A1 1 0 0 0 6.9 5.6Z"/>
-              </svg>
-              <svg class="music-icon music-icon-pause" viewBox="0 0 24 24">
-                <rect x="6.5" y="5" width="3.8" height="14" rx="1.2"/>
-                <rect x="13.7" y="5" width="3.8" height="14" rx="1.2"/>
-              </svg>
-            </span>
-            <span class="music-label" aria-hidden="true">Play music</span>
-          </button>
-          <p class="music-credit" id="music-credit" role="note">
-            <span class="music-credit-title">♪ “Jingle Bells (Calm)”</span>
-            Kevin MacLeod (<a href="https://incompetech.com" target="_blank" rel="noopener">incompetech.com</a>) ·
-            <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>
-          </p>
-        </div>
-      </div>
+        </span>
+      </a>
     </div>
 
     <div class="register" id="register">
@@ -120,32 +100,32 @@
           </header>
 
           <div class="field">
-            <label for="name">Name</label>
+            <label for="name">Name <span class="required" aria-hidden="true">*</span></label>
             <input id="name" name="name" placeholder="Full Name" autocomplete="name" dir="auto" maxlength="120" required aria-describedby="name-error">
             <p class="field-error" id="name-error"></p>
           </div>
 
           <div class="row">
             <div class="field">
-              <label for="phone">Phone Number</label>
+              <label for="phone">Phone Number <span class="required" aria-hidden="true">*</span></label>
               <input id="phone" name="phone" type="tel" placeholder="03 123 456" autocomplete="tel" maxlength="32" required aria-describedby="phone-error">
               <p class="field-error" id="phone-error"></p>
             </div>
             <div class="field">
-              <label for="age">Age</label>
+              <label for="age">Age <span class="required" aria-hidden="true">*</span></label>
               <input id="age" name="age" inputmode="numeric" placeholder="Years" maxlength="3" required aria-describedby="age-error">
               <p class="field-error" id="age-error"></p>
             </div>
           </div>
 
           <div class="field">
-            <label id="town-label" for="town-trigger">Town</label>
+            <label id="town-label" for="town-trigger">Town <span class="required" aria-hidden="true">*</span></label>
             <div class="dropdown">
               <input type="hidden" name="town">
               <button class="dropdown-trigger is-placeholder" id="town-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="town-menu" aria-labelledby="town-label town-trigger" aria-describedby="town-error">
                 <span class="dropdown-value">Choose Your Town</span>
               </button>
-              <ul class="dropdown-menu" id="town-menu" role="listbox" aria-labelledby="town-label" tabindex="-1" hidden>
+              <ul class="dropdown-menu" id="town-menu" role="listbox" aria-labelledby="town-label" aria-required="true" tabindex="-1" hidden>
                 <li role="option" lang="ar" dir="rtl">عيناتا</li>
                 <li role="option" lang="ar" dir="rtl">برقا</li>
                 <li role="option" lang="ar" dir="rtl">بشوات</li>
@@ -168,7 +148,7 @@
           </div>
 
           <div class="field" id="other-town-field" hidden>
-            <label for="other-town">Your Town</label>
+            <label for="other-town">Your Town <span class="required" aria-hidden="true">*</span></label>
             <input id="other-town" name="otherTown" placeholder="Enter Your Town Name" dir="auto" maxlength="120" aria-describedby="other-town-error">
             <p class="field-error" id="other-town-error"></p>
           </div>
@@ -185,25 +165,11 @@
         </form>
 
         <div class="confirmation" id="confirmation" hidden>
-          <svg class="ornament" viewBox="0 0 64 84" aria-hidden="true">
-            <circle cx="32" cy="7" r="5" fill="none" stroke="#f2c96b" stroke-width="2.5"/>
-            <rect x="24" y="11" width="16" height="9" rx="2" fill="#f2c96b"/>
-            <rect x="24" y="15" width="16" height="2" fill="#c99a3a"/>
-            <circle cx="32" cy="50" r="30" fill="#d62b2b"/>
-            <path d="M3.5,45 Q32,55 60.5,45 L61.5,52 Q32,62 2.5,52 Z" fill="#f2c96b"/>
-            <g fill="#f2c96b">
-              <circle cx="16" cy="66" r="2"/>
-              <circle cx="32" cy="71" r="2"/>
-              <circle cx="48" cy="66" r="2"/>
-              <circle cx="32" cy="35" r="2"/>
-            </g>
-            <ellipse cx="20" cy="36" rx="6" ry="9" fill="#fff" opacity=".28" transform="rotate(35 20 36)"/>
-          </svg>
-          <p class="eyebrow">✦ Merry Christmas ✦</p>
-          <h2 tabindex="-1">See you there! 🎄</h2>
+          <img class="logo" src="assets/logo.png" width="588" height="453" alt="بالضيعة أحلى" lang="ar">
+          <p class="eyebrow">Merry Christmas</p>
+          <h2 tabindex="-1">See you there!</h2>
           <p>Your registration has been received.</p>
-          <span class="candy-stripe" aria-hidden="true"></span>
-          <button class="button button-ghost" id="register-another" type="button">Register another person</button>
+          <span class="snowflake" aria-hidden="true"><span></span><span></span><span></span></span>
         </div>
       </div>
     </div>
