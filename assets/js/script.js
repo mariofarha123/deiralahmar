@@ -49,6 +49,18 @@ function initSeamlessVideo(videoList) {
     return;
   }
 
+  const [firstVideo, standbyVideo] = videos;
+  function preloadStandby() {
+    standbyVideo.preload = "auto";
+    standbyVideo.load();
+  }
+
+  if (!firstVideo.paused && firstVideo.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+    preloadStandby();
+  } else {
+    firstVideo.addEventListener("playing", preloadStandby, { once: true });
+  }
+
   const fadeSeconds = 0.6;
   let active = 0;
   let swapping = false;
