@@ -21,18 +21,22 @@
 
   <main>
     <div class="media" aria-hidden="true">
-      <video class="bg-video is-active is-front" muted playsinline autoplay preload="auto">
-        <source src="assets/background-mobile.mp4" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
-        <source src="assets/background.mp4" type="video/mp4">
-      </video>
-      <video class="bg-video" muted playsinline preload="auto">
-        <source src="assets/background-mobile.mp4" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
-        <source src="assets/background.mp4" type="video/mp4">
-      </video>
+      <div class="media-frame">
+        <video class="bg-video is-active is-front" muted playsinline autoplay preload="auto">
+          <source src="assets/background-mobile.mp4" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
+          <source src="assets/background.mp4" type="video/mp4">
+        </video>
+        <video class="bg-video" muted playsinline preload="auto">
+          <source src="assets/background-mobile.mp4" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
+          <source src="assets/background.mp4" type="video/mp4">
+        </video>
+      </div>
     </div>
 
     <div class="hero">
-      <img class="logo" src="assets/logo.png" width="588" height="453" alt="بالضيعة أحلى" lang="ar">
+      <div class="hero-logo">
+        <img class="logo" src="assets/logo.png" width="588" height="453" alt="بالضيعة أحلى" lang="ar">
+      </div>
       <a class="scroll-cue" href="#register">
         <span class="cta">
           <svg class="santa-hat" viewBox="0 0 64 56" aria-hidden="true">
@@ -161,7 +165,9 @@
 
           <p class="form-message" id="form-message" role="alert" hidden></p>
 
-          <button class="button" type="submit">Register</button>
+          <div class="form-actions">
+            <button class="button" type="submit">Register</button>
+          </div>
         </form>
 
         <div class="confirmation" id="confirmation" hidden>

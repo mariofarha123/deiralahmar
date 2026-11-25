@@ -10,6 +10,7 @@ initBackgroundMusic(document.getElementById("bg-music"));
 initSeamlessVideo(document.querySelectorAll(".bg-video"));
 initSnowfall(document.querySelector(".snowfall"));
 initScrollCue(document.querySelector(".scroll-cue"));
+initViewportReveals();
 
 function initBackgroundMusic(audio) {
   if (!audio) return;
@@ -161,13 +162,50 @@ function initScrollCue(link) {
     const target = document.querySelector(link.getAttribute("href"));
     if (!target) return;
     event.preventDefault();
-    target.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
+    scrollToRegistration(target);
   });
+}
+
+function initViewportReveals() {
+  if (prefersReducedMotion || !window.IntersectionObserver) return;
+
+  const enter = new IntersectionObserver((entries) => {
+    let delay = 0;
+    for (const { target, isIntersecting } of entries) {
+      if (!isIntersecting || target.classList.contains("is-in-view")) continue;
+      if (target.closest("#registration")) {
+        target.style.setProperty("--reveal-delay", `${delay}ms`);
+        delay = Math.min(delay + 45, 180);
+      }
+      target.classList.add("is-in-view");
+    }
+  }, { rootMargin: "24px 0px" });
+
+  // Reset farther offscreen so the pop's movement can't restart its own reveal.
+  const exit = new IntersectionObserver((entries) => {
+    for (const { target, isIntersecting } of entries) {
+      if (!isIntersecting) target.classList.remove("is-in-view");
+    }
+  }, { rootMargin: "64px 0px" });
+
+  const elements = document.querySelectorAll(
+    ".hero-logo, .scroll-cue, .card, #registration :is(.card-header, .field, .form-actions)",
+  );
+  for (const element of elements) {
+    element.classList.add("reveal");
+    enter.observe(element);
+    exit.observe(element);
+  }
+}
+
+function scrollToRegistration(section) {
+  section.querySelector("#confirmation:not([hidden]) h2")?.focus({ preventScroll: true });
+  section.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
 }
 
 function initRegistrationForm(form) {
   const confirmation = document.getElementById("confirmation");
-  const scrollCueLabel = document.querySelector(".scroll-cue .cta-label");
+  const scrollCue = document.querySelector(".scroll-cue");
   const message = document.getElementById("form-message");
   const submitButton = form.querySelector('[type="submit"]');
   const otherTownField = document.getElementById("other-town-field");
@@ -231,7 +269,13 @@ function initRegistrationForm(form) {
     toggleOtherTown("");
     form.hidden = true;
     confirmation.hidden = false;
-    scrollCueLabel.textContent = "View Confirmation";
+    scrollCue.querySelector(".cta-label").textContent = "View Confirmation";
+
+    const heroLogo = scrollCue.closest(".hero").querySelector(".hero-logo");
+    new IntersectionObserver(([{ isIntersecting }]) => {
+      scrollCue.classList.toggle("is-hidden", !isIntersecting);
+      scrollCue.inert = !isIntersecting;
+    }).observe(heroLogo);
   }
 
   async function saveOnce(registration) {
@@ -286,7 +330,7 @@ function initRegistrationForm(form) {
         await saveOnce(registration);
       }
       showConfirmation();
-      confirmation.querySelector("h2").focus();
+      scrollToRegistration(form.closest("#register"));
     } catch (error) {
       console.error(error);
       showMessage("We couldn’t save your registration. Please try again.");
