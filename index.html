@@ -16,20 +16,20 @@
   <script src="assets/js/script.js" defer></script>
 </head>
 <body>
-  <div class="media" aria-hidden="true">
-    <video class="bg-video is-active is-front" muted playsinline autoplay preload="auto">
-      <source src="assets/background-mobile.mp4" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
-      <source src="assets/background.mp4" type="video/mp4">
-    </video>
-    <video class="bg-video" muted playsinline preload="auto">
-      <source src="assets/background-mobile.mp4" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
-      <source src="assets/background.mp4" type="video/mp4">
-    </video>
-  </div>
-
   <audio id="bg-music" src="assets/audio/christmas.mp3" loop preload="auto"></audio>
 
   <main>
+    <div class="media" aria-hidden="true">
+      <video class="bg-video is-active is-front" muted playsinline autoplay preload="auto">
+        <source src="assets/background-mobile.mp4" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
+        <source src="assets/background.mp4" type="video/mp4">
+      </video>
+      <video class="bg-video" muted playsinline preload="auto">
+        <source src="assets/background-mobile.mp4" type="video/mp4" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)">
+        <source src="assets/background.mp4" type="video/mp4">
+      </video>
+    </div>
+
     <div class="hero">
       <img class="logo" src="assets/logo.png" width="588" height="453" alt="بالضيعة أحلى" lang="ar">
       <div class="hero-actions">
@@ -208,5 +208,7 @@
       </div>
     </div>
   </main>
+
+  <div class="toolbar-shade" aria-hidden="true"></div>
 </body>
 </html>
