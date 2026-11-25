@@ -1,8 +1,6 @@
 const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzaNMSIdWxIAJbLx9TyrOvk03Vu9EiW_bUrZxfMF6rP1PhL3ElRG3eXrhDfTajoBmBW/exec";
 
 const OTHER_TOWN = "other";
-const ONE_REGISTRATION_PER_BROWSER = false;
-const REGISTRATION_KEY = "deiralahmar-christmas-registration-complete";
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 initRegistrationForm(document.getElementById("registration"));
@@ -265,14 +263,6 @@ function initRegistrationForm(form) {
     };
   }
 
-  function readRegistrationStatus() {
-    try {
-      return localStorage.getItem(REGISTRATION_KEY) === "1";
-    } catch {
-      return null;
-    }
-  }
-
   function showConfirmation() {
     if (!confirmation.hidden) return;
 
@@ -288,19 +278,6 @@ function initRegistrationForm(form) {
       scrollCue.classList.toggle("is-hidden", !isIntersecting);
       scrollCue.inert = !isIntersecting;
     }).observe(heroLogo);
-  }
-
-  async function saveOnce(registration) {
-    if (readRegistrationStatus() || await registrationRecord()) return;
-
-    await saveRegistration(registration);
-    await registrationRecord(true);
-
-    try {
-      localStorage.setItem(REGISTRATION_KEY, "1");
-    } catch {
-      // Registration succeeded even if browser storage is unavailable.
-    }
   }
 
   form.addEventListener("input", (event) => {
@@ -334,60 +311,21 @@ function initRegistrationForm(form) {
         email: data.email,
       };
 
-      if (!ONE_REGISTRATION_PER_BROWSER) {
-        await saveRegistration(registration);
-      } else if (navigator.locks && readRegistrationStatus() !== null) {
-        await navigator.locks.request(REGISTRATION_KEY, () => saveOnce(registration));
-      } else {
-        await saveOnce(registration);
-      }
+      await saveRegistration(registration);
       showConfirmation();
       scrollToRegistration(form.closest("#register"));
     } catch (error) {
+      if (error.code === "DUPLICATE_PHONE" || error.code === "INVALID_PHONE") {
+        setError(form.elements.phone, error.message);
+        form.elements.phone.focus();
+        return;
+      }
       console.error(error);
       showMessage("We couldn’t save your registration. Please try again.");
     } finally {
       setSubmitting(false);
     }
   });
-
-  if (!ONE_REGISTRATION_PER_BROWSER) return;
-
-  if (readRegistrationStatus()) {
-    showConfirmation();
-  } else {
-    registrationRecord().then((completed) => {
-      if (completed) showConfirmation();
-    });
-  }
-
-  window.addEventListener("storage", (event) => {
-    if (event.key === REGISTRATION_KEY && event.newValue === "1") showConfirmation();
-  });
-}
-
-// Commit the completion flag across tabs before releasing the submission lock.
-function registrationRecord(completed = false) {
-  return new Promise((resolve) => {
-    const open = indexedDB.open(REGISTRATION_KEY, 1);
-    open.onupgradeneeded = () => open.result.createObjectStore("registration");
-    open.onerror = () => resolve(false);
-    open.onsuccess = () => {
-      const database = open.result;
-      const transaction = database.transaction("registration", completed ? "readwrite" : "readonly");
-      const store = transaction.objectStore("registration");
-      const request = completed ? store.put(true, "complete") : store.get("complete");
-
-      transaction.oncomplete = () => {
-        database.close();
-        resolve(completed || request.result === true);
-      };
-      transaction.onabort = () => {
-        database.close();
-        resolve(false);
-      };
-    };
-  }).catch(() => false);
 }
 
 function createTownSelect(root, onSelect) {
@@ -527,5 +465,9 @@ async function saveRegistration(registration) {
     body: new URLSearchParams(registration),
   });
   const result = await response.json();
-  if (!result.ok) throw new Error(result.error ?? "Registration was not saved.");
+  if (!result.ok) {
+    const error = new Error(result.error ?? "Registration was not saved.");
+    error.code = result.code;
+    throw error;
+  }
 }
