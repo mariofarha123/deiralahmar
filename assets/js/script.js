@@ -36,19 +36,18 @@ function initBlizzard(intro, onClear) {
   intro.style.setProperty("--blizzard-sweep-delay", `${duration * clearStart}ms`);
   intro.style.setProperty("--blizzard-sweep-length", `${duration * (clearEnd - clearStart)}ms`);
 
-  function resize() {
-    const width = intro.clientWidth;
-    const height = intro.clientHeight;
+  function prepareFog() {
+    const { width, height, left, top } = intro.getBoundingClientRect();
     const fogWidth = width * 0.74;
     const fogHeight = height * 0.16;
     const fogY = height * 0.45;
     const fogLengthSquared = Math.max(1, fogWidth ** 2 + fogHeight ** 2);
     // Keep the sheet's left boundary outside the soft fog, even on tall screens.
     const fogX = ((height - fogY) * fogHeight + 0.5 * fogLengthSquared) / Math.max(1, fogWidth);
-    const sheetLeft = width * fogOrigin - fogX;
-    const sheetPixels = width - sheetLeft + 2;
-    whiteout.style.left = `${sheetLeft}px`;
-    whiteout.style.width = `${sheetPixels}px`;
+    const sheetPixels = width * (1 - fogOrigin) + fogX;
+    // Keep the painted sheet and its sweep proportional to the viewport during toolbar changes.
+    intro.style.setProperty("--blizzard-sheet-width", `${100 * sheetPixels / width}%`);
+    intro.style.setProperty("--blizzard-travel", `${100 * width * windTravel / sheetPixels}%`);
     const ratio = Math.min(0.35, 420 / Math.max(1, sheetPixels), 295 / Math.max(1, height));
     whiteout.width = Math.max(1, Math.round(sheetPixels * ratio));
     whiteout.height = Math.max(1, Math.round(height * ratio));
@@ -75,15 +74,13 @@ function initBlizzard(intro, onClear) {
       ctx.restore();
     }
 
-    intro.style.setProperty("--blizzard-travel", `${width * windTravel}px`);
-
     // Use the middle of the fog front to time each reveal.
     const fogTravel = Math.max(1, width * windTravel * fogWidth);
     let formRevealStart = 0;
     for (const target of targets) {
       const bounds = target.getBoundingClientRect();
-      const x = bounds.left + bounds.width / 2 - width * fogOrigin;
-      const y = bounds.top + bounds.height / 2 - fogY;
+      const x = bounds.left + bounds.width / 2 - left - width * fogOrigin;
+      const y = bounds.top + bounds.height / 2 - top - fogY;
       const projection = x * fogWidth + y * fogHeight;
       const reaches = sweepTime((projection - 0.87 * fogLengthSquared) / fogTravel);
       const ends = sweepTime((projection - 0.05 * fogLengthSquared) / fogTravel);
@@ -103,7 +100,6 @@ function initBlizzard(intro, onClear) {
 
   function finish() {
     clearTimeout(deadline);
-    window.removeEventListener("resize", resize);
     window.removeEventListener("pagehide", finish);
     document.removeEventListener("focusin", finish);
     whiteout.removeEventListener("animationend", finishOnFade);
@@ -121,12 +117,11 @@ function initBlizzard(intro, onClear) {
   }
 
   intro.hidden = false;
-  resize();
+  prepareFog();
   for (const target of targets) target.classList.add("blizzard-emerge");
   intro.classList.add("is-playing");
   const deadline = setTimeout(finish, duration + 1200);
   whiteout.addEventListener("animationend", finishOnFade);
-  window.addEventListener("resize", resize);
   window.addEventListener("pagehide", finish, { once: true });
   document.addEventListener("focusin", finish, { once: true });
   return targets;
@@ -337,7 +332,7 @@ function initViewportReveals(blizzardTargets = []) {
   }, { rootMargin: "64px 0px" });
 
   const elements = document.querySelectorAll(
-    ".hero-logo, .scroll-cue, .hero-actions .instagram-link, .card, #registration :is(.card-header, .field, .form-actions)",
+    ".hero-logo, .scroll-cue, .hero-actions .instagram-link, .card, #registration > :is(.card-header, .field, .row, .form-actions)",
   );
   for (const element of elements) {
     element.classList.add("reveal");
