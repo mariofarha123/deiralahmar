@@ -10,6 +10,20 @@
   <link rel="preload" as="image" href="assets/background-mobile-poster.jpg" media="not all and (min-width: 64rem) and (min-aspect-ratio: 5/4)" fetchpriority="high">
   <link rel="preload" as="image" href="assets/background-poster.jpg" media="(min-width: 64rem) and (min-aspect-ratio: 5/4)" fetchpriority="high">
   <script>
+    if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
+      // Start at the top before the blizzard measures the hero.
+      const scrollRestoration = history.scrollRestoration;
+      history.scrollRestoration = "manual";
+      if (location.hash) {
+        const url = new URL(location.href);
+        url.hash = "";
+        history.replaceState(history.state, "", url);
+      }
+      window.addEventListener("pagehide", () => {
+        history.scrollRestoration = scrollRestoration;
+      }, { once: true });
+    }
+
     {
       const musicListeners = new AbortController();
       const options = { capture: true, passive: true, signal: musicListeners.signal };

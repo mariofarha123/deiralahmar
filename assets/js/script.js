@@ -3,13 +3,26 @@ const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzaNMSIdWxIAJb
 const OTHER_TOWN = "other";
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const warmStandbyVideo = initSeamlessVideo(document.querySelectorAll(".bg-video"));
-initSnowfall(document.querySelector(".snowfall-flakes"));
-const blizzardTargets = initBlizzard(document.querySelector(".blizzard-intro"), () => warmStandbyVideo?.());
-initRegistrationForm(document.getElementById("registration"));
-if (!blizzardTargets) warmStandbyVideo?.();
-initScrollCue(document.querySelector(".scroll-cue"));
-initViewportReveals(blizzardTargets);
+if (performance.getEntriesByType("navigation")[0]?.type === "reload") {
+  document.addEventListener("DOMContentLoaded", () => {
+    // Resolve the page layout before resetting a restored scroll position.
+    const { top, left } = document.documentElement.getBoundingClientRect();
+    if (top || left) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    initPage();
+  }, { once: true });
+} else {
+  initPage();
+}
+
+function initPage() {
+  const warmStandbyVideo = initSeamlessVideo(document.querySelectorAll(".bg-video"));
+  initSnowfall(document.querySelector(".snowfall-flakes"));
+  const blizzardTargets = initBlizzard(document.querySelector(".blizzard-intro"), () => warmStandbyVideo?.());
+  initRegistrationForm(document.getElementById("registration"));
+  if (!blizzardTargets) warmStandbyVideo?.();
+  initScrollCue(document.querySelector(".scroll-cue"));
+  initViewportReveals(blizzardTargets);
+}
 
 function initBlizzard(intro, onClear) {
   if (!intro || prefersReducedMotion || document.hidden) return;
@@ -22,8 +35,10 @@ function initBlizzard(intro, onClear) {
   const clearEnd = 0.87;
   const fogOrigin = -0.84;
   const windTravel = 2.02;
+  const minHeroFade = 320;
+  const heroActions = document.querySelector(".hero-actions");
 
-  const targets = [...document.querySelectorAll(".hero-logo, .hero-actions > a, .register-logo, .register > .card, .register .form-actions > .button")]
+  const targets = [...document.querySelectorAll(".hero-logo, .register-logo, .register > .card, .register .form-actions > .button")]
     .filter((element) => {
       const { width, bottom, top } = element.getBoundingClientRect();
       return width > 0 && bottom > 0 && top < window.innerHeight;
@@ -53,7 +68,7 @@ function initBlizzard(intro, onClear) {
     whiteout.height = Math.max(1, Math.round(height * ratio));
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
 
-    paintFogBank(ctx, { sheetPixels, height, fogX, fogY, fogWidth, fogHeight, fogLengthSquared });
+    const texture = paintFogBank(ctx, { sheetPixels, height, fogX, fogY, fogWidth, fogHeight, fogLengthSquared });
 
     // Bake the soft gusts into the whiteout so they share a single moving layer.
     for (let i = 0; i < 12; i++) {
@@ -89,6 +104,7 @@ function initBlizzard(intro, onClear) {
       target.style.setProperty("--blizzard-delay", `${begins}ms`);
       target.style.setProperty("--blizzard-duration", `${Math.min(ends - reaches, duration - begins)}ms`);
     }
+    return { texture, sheetWidthRatio: sheetPixels / width };
   }
 
   function sweepTime(amount) {
@@ -98,11 +114,58 @@ function initBlizzard(intro, onClear) {
     return duration * (clearStart + (clearEnd - clearStart) * phase);
   }
 
+  function syncHeroReveals() {
+    const { width, height, right, top } = intro.getBoundingClientRect();
+    if (!width || !height) return;
+    const { width: columns, height: rows, data } = fog.texture;
+    const sheetWidth = width * fog.sheetWidthRatio;
+    const sheetLeft = right - sheetWidth;
+    const scale = columns / sheetWidth;
+    const travel = width * windTravel * scale;
+
+    for (const animation of heroReveals) {
+      const effect = animation.effect;
+      const elapsed = animation.currentTime ?? 0;
+      // Retiming a fade that has already started would jump its opacity.
+      if (elapsed >= effect.getTiming().delay) continue;
+      const bounds = effect.target.getBoundingClientRect();
+      if (!bounds.width || bounds.bottom <= 0) continue;
+
+      const centerY = bounds.top + bounds.height / 2;
+      const row = Math.max(0, Math.min(rows - 1, Math.floor((centerY - top) * rows / height)));
+      const points = [0.25, 0.5, 0.75].map((fraction) => (bounds.left + bounds.width * fraction - sheetLeft) * scale);
+      let begin;
+      let end = duration;
+
+      // Sample the painted fog over the button as the sheet moves past it.
+      for (let step = 0; step <= 64; step++) {
+        const progress = step / 64;
+        const alpha = points.reduce((sum, point) => {
+          const column = Math.floor(point - progress * travel);
+          if (column < 0 || column >= columns) return sum;
+          return sum + data[(row * columns + column) * 4 + 3];
+        }, 0) / (255 * points.length);
+        if (alpha <= 0.32) begin ??= sweepTime(progress);
+        if (alpha <= 0.07) {
+          end = sweepTime(progress);
+          break;
+        }
+      }
+
+      const delay = Math.min(duration - minHeroFade, Math.max(elapsed, begin ?? sweepTime(1)));
+      effect.updateTiming({ delay, duration: Math.max(minHeroFade, end - delay) });
+    }
+  }
+
   function finish() {
     clearTimeout(deadline);
+    revealResize.disconnect();
+    window.removeEventListener("scroll", syncHeroReveals);
     window.removeEventListener("pagehide", finish);
     document.removeEventListener("focusin", finish);
     whiteout.removeEventListener("animationend", finishOnFade);
+    if (heroActions.matches(".is-in-view, :focus-within")) heroActions.classList.add("blizzard-presented");
+    for (const animation of heroReveals) animation.cancel();
     for (const target of targets) {
       target.classList.remove("blizzard-emerge");
       target.style.removeProperty("--blizzard-delay");
@@ -117,11 +180,21 @@ function initBlizzard(intro, onClear) {
   }
 
   intro.hidden = false;
-  prepareFog();
+  const fog = prepareFog();
+  const heroReveals = [...heroActions.querySelectorAll(":scope > a")].map((link) => link.animate(
+    [{ opacity: 0, pointerEvents: "none" }, { opacity: 1, pointerEvents: "auto" }],
+    { duration: minHeroFade, delay: duration, easing: "cubic-bezier(0.37, 0, 0.24, 1)", fill: "both" },
+  ));
+  syncHeroReveals();
+  const revealResize = new ResizeObserver(syncHeroReveals);
+  revealResize.observe(intro);
+  revealResize.observe(heroActions.parentElement);
+  revealResize.observe(heroActions);
   for (const target of targets) target.classList.add("blizzard-emerge");
   intro.classList.add("is-playing");
   const deadline = setTimeout(finish, duration + 1200);
   whiteout.addEventListener("animationend", finishOnFade);
+  window.addEventListener("scroll", syncHeroReveals, { passive: true });
   window.addEventListener("pagehide", finish, { once: true });
   document.addEventListener("focusin", finish, { once: true });
   return targets;
@@ -161,6 +234,7 @@ function paintFogBank(ctx, { sheetPixels, height, fogX, fogY, fogWidth, fogHeigh
     }
   }
   ctx.putImageData(image, 0, 0);
+  return image;
 }
 
 function paintSnowTile(layer, width, height, fineCount, closeCount, windDriven = true) {
@@ -331,8 +405,16 @@ function initViewportReveals(blizzardTargets = []) {
     }
   }, { rootMargin: "64px 0px" });
 
+  const heroActions = document.querySelector(".hero-actions");
+  heroActions.classList.add("reveal");
+  // Let the buttons replay when they return from the top edge above the form.
+  new IntersectionObserver(([{ isIntersecting }]) => {
+    heroActions.classList.toggle("is-in-view", isIntersecting);
+    if (!isIntersecting) heroActions.classList.remove("blizzard-presented");
+  }, { rootMargin: "-64px 0px 24px" }).observe(heroActions);
+
   const elements = document.querySelectorAll(
-    ".hero-logo, .scroll-cue, .hero-actions .instagram-link, .card, #registration > :is(.card-header, .field, .row, .form-actions)",
+    ".hero-logo, .card, #registration > :is(.card-header, .field, .row, .form-actions)",
   );
   for (const element of elements) {
     element.classList.add("reveal");

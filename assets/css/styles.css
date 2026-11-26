@@ -1018,7 +1018,7 @@ input:is(:autofill, :-webkit-autofill) {
   }
 
   .card.reveal,
-  #registration > .row.reveal {
+  #registration > :is(.field, .row).reveal {
     --reveal-animation: fade-in;
   }
 
@@ -1039,10 +1039,27 @@ input:is(:autofill, :-webkit-autofill) {
     scale: none !important;
   }
 
-  .reveal.is-in-view:not(.hero-logo, .scroll-cue, .blizzard-presented, .instagram-link:focus-visible, :has(.confirmation:not([hidden]))),
+  .reveal.is-in-view:not(:where(.hero-logo, .hero-actions, .blizzard-presented, :has(.confirmation:not([hidden])))),
   .hero-logo.is-in-view:not(.blizzard-presented) > .logo,
-  .scroll-cue.is-in-view:not(.blizzard-presented, :focus-visible) > .cta {
+  .hero-actions.is-in-view:not(.blizzard-presented, :focus-within) > a {
     animation: var(--reveal-animation) var(--reveal-duration) var(--reveal-ease) var(--reveal-delay, 0ms) backwards;
+  }
+
+  .hero-actions:focus-within {
+    opacity: 1;
+  }
+
+  .hero-actions.reveal:not(.is-in-view, :focus-within) {
+    pointer-events: none;
+  }
+
+  .blizzard-intro.is-playing ~ main .hero-actions {
+    opacity: 1;
+    pointer-events: none;
+  }
+
+  .blizzard-intro.is-playing ~ main .hero-actions > a {
+    animation: none;
   }
 
   .card.is-in-view .confirmation:not([hidden]) {
