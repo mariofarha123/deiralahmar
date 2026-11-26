@@ -1,4 +1,4 @@
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzaNMSIdWxIAJbLx9TyrOvk03Vu9EiW_bUrZxfMF6rP1PhL3ElRG3eXrhDfTajoBmBW/exec";
+const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbxF8nNoZauOWtnooj1dGDxrmJ5WO4-sX4SWfxARQKkN8IOptAWBLlp60cVPfCHF3in9/exec";
 
 const OTHER_TOWN = "other";
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
